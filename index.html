@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Firebase_version9_RealtimeDB(G'sACADEMY初学者用サンプル)</title>
+
+<style>
+    h1 {
+        text-align: center;
+    }
+    .chat-form{
+        text-align: center;
+    }
+
+    #output {
+        width: 50%;
+        align-items: center;
+        color: rgb(0, 0, 0);
+        height: 300px;overflow: auto;
+        overflow: scroll;
+        border:2px solid gray;
+        border-radius:  6px ;
+        margin: 0 auto;
+        padding: 20px;
+        overflow-wrap: break-word;
+    }
+    .msg:nth-child(even){
+        width: 50%;
+        margin-left: auto;
+        flex-direction: row-reverse;
+    }
+
+
+</style>
+</head>
+<body>
+
+<h1>LINE風のチャットアプリ</h1>
+
+<!-- コンテンツ表示画面 -->
+<div class="center">
+    <div id="output" class="outputcss" style="overflow: auto; height: 450px;overflow: auto;"></div>
+</div>
+
+<!-- チャット入力画面 -->
+<div class="chat-form">
+    <div> 名前：<input type="text" id="uname" style="margin:10px;"> </div>
+    <div>
+        <textarea id="text" cols="100" rows="5"></textarea>
+    </div>
+    <div>
+        <button id="send">送信</button>
+    </div>
+
+</div>
+
+<!-- JQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- JQuery -->
+
+
+<!--** 以下Firebase **-->
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+    import { getDatabase, ref, push, set, onChildAdded, remove,onChildRemoved } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app); // RealtimeDatabase使うよ 
+    const dbRef = ref(db, 'dev245'); // RealtimeDatabase”chat“を使うよ
+
+    // データ送信および登録
+    $("#send").on("click",function(){
+        const msg = {
+            uname: $("#uname").val(),
+            text: $("#text").val()
+        }
+        const newPostRef = push(dbRef);
+        set(newPostRef, msg);
+        console.log(msg, 'データ登録確認');
+
+        // 送信後にテキストを空欄にする
+        $("#text").val("");
+        $("#text").focus();
+
+    });    
+
+    // データ表示確認（受信処理）。下の(data)については、()内にfirebase側でデータ入れてくるので名前としてdataを入れているだけ。多分名前変えても良さそう。
+    onChildAdded(dbRef, function(data){
+        console.log(data);
+        const msg = data.val();
+        console.log(msg, '取得したデータの塊を確認');
+        const key = data.key;
+        console.log(data.key, 'データのキーを確認');
+
+        // es6のテンプレートリテラル。`の斜めちょんちょんなので注意。
+        // let h = `<p>`;
+        //     h += msg.uname;
+        //     h += `<br>`;
+        //     h += msg.text;
+        //     h += `</p>`;
+
+        let h = `
+        <div class="msg">
+            <h3>${msg.uname}</h3>
+            <p>${msg.text}</p>
+        </div>    
+    `;
+
+        $("#output").append(h);
+
+    });
+
+    // // エンターキーチェック。eを入れることでキーイベントを取得できる
+    // $("#text").on("keydown", function(e){
+    //     console.log(e);
+    // })
+
+
+
+  </script>
+
+
+</body>
+</html>
+
+
